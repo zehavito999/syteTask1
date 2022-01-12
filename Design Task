@@ -1,0 +1,39 @@
+Design Task:
+
+Problem:
+
+Not all products change, it means index remains the same.
+Other products attributes updated, like price, in_stock count and etc.
+We can classify our cases, whether execute algorithm or spare execution time.
+
+The following scenarios require algorithm execution:
+
+* if image has change -> run algorithm(operation=UPDATE)
+* if new item -> run algorithm(operation=ADD)
+
+The following scenarios do not require algorithm execution:
+
+* if small changes related to specific product attributes -> do not run algorithm(operation=UPDATE)
+* if delete item -> do not run algorithm(operation=DELETE)
+
+In the attached diagram file, you will be able to see the flow per customer catalog processing procedure:
+
+for each catalog that arrive from customer:
+1. iterate over all the items in the catalog:
+    1.1. if item's unique key exists on elasticDB:
+        1.1.1 if update require algorithm execution -> mark item as needed algorithm execution
+        1.1.2 else, add to update store object
+    1.2. else, mark item as needed algorithm execution
+2. execute in async manner algorithm for each of the required items
+3. update in one transaction all updates that required in store object
+
+Refinements:
+
+for each customer, general:
+1. for each customer we can create a new job in jenkins with the following stages as part of job's pipeline.
+2. each customers jobs can be executed in parallel (there will be no collision between different customer operations).
+
+for individual customer, general:
+1. between new catalogs incoming, we work in synchronous manner, in catalog processing itself async manner.
+2. after finish going through all items in catalog,
+we execute all updates in one transaction, so we can spare I/O operations.
